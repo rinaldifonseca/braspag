@@ -1,0 +1,46 @@
+module Braspag
+  class Transaction
+    attr_accessor :soap_adapter, :response_handler
+
+    def initialize(soap_adapter = SavonAdapter, response_handler = ResponseHandler.new)
+      @soap_adapter = soap_adapter
+      @response_handler = response_handler
+    end
+
+    def self.authorize(params)
+      Braspag::Transaction.new.authorize(params)
+    end
+
+    def self.capture(params)
+      Braspag::Transaction.new.capture(params)
+    end
+
+    def authorize(params)
+      request = Request.new(Braspag.transaction_wsdl, :authorize_transaction, build_authorize_credit_card_params(params)) do |request| 
+        request.on_success {|response| response_handler.authorize_transaction(response) }
+        request.on_failure {|response| response_handler.handle_error(response) }
+      end
+
+      request.call
+    end
+
+    def capture(params)
+      request = Request.new(Braspag.transaction_wsdl, :capture_credit_card_transaction, build_capture_credit_card_params(params)) do |request| 
+        request.on_success {|response| response_handler.capture_transaction(response) }
+        request.on_failure {|response| response_handler.handle_error(response) }
+      end
+
+      request.call
+    end
+
+    private
+
+    def build_authorize_credit_card_params(params)
+      TransactionParamBuilder.new(params).authorize
+    end
+
+    def build_capture_credit_card_params(params)
+      TransactionParamBuilder.new(params).capture
+    end
+  end
+end
