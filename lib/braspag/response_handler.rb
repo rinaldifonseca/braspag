@@ -6,13 +6,13 @@ module Braspag
         payment_data_response = data[:payment_data_collection][:payment_data_response]
         status =  payment_data_response[:status]
         if status == "1" || status == "2"
-          OpenStruct.new(:success? => true, :data => payment_data_response.merge(data[:order_data]))
+          respond_with_success(payment_data_response.merge(data[:order_data]))
         else
-          OpenStruct.new(:success? => false, :error_code => payment_data_response[:return_code], :error_message => payment_data_response[:return_message])
+          respond_with_failure(payment_data_response[:return_code], payment_data_response[:return_message])
         end
       else
         error_report = data[:error_report_data_collection][:error_report_data_response]
-        OpenStruct.new(:success? => false, :error_code => error_report[:error_code], :error_message => error_report[:error_message])
+        respond_with_failure(error_report[:error_code], error_report[:error_message])
       end
     end
 
@@ -51,9 +51,14 @@ module Braspag
       end
     end
 
-    def handle_error(response)
-      fault = response.fault
-      OpenStruct.new(:success? => false, :error_code => fault[:faultcode], :error_message => fault[:faultstring])
+    private
+
+    def respond_with_success(data)
+      OpenStruct.new(:success? => true, :data => data)
+    end
+
+    def respond_with_failure(error_code, error_message)
+      OpenStruct.new(:success? => false, :error_code => error_code, :error_message => error_message)
     end
   end
 end
