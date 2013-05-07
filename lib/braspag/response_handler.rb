@@ -21,13 +21,13 @@ module Braspag
       if data[:success]
         data_collection = data[:transaction_data_collection][:transaction_data_response]
         if data_collection[:status] == "0"
-          OpenStruct.new(:success? => true, :data => data_collection)
+          respond_with_success(data_collection)
         else
-          OpenStruct.new(:success? => false, :error_code => data_collection[:return_code], :error_message => data_collection[:return_message])
+          respond_with_failure(data_collection[:return_code], data_collection[:return_message])
         end
       else
         error_report = data[:error_report_data_collection][:error_report_data_response]
-        OpenStruct.new(:success? => false, :error_code => error_report[:error_code], :error_message => error_report[:error_message])
+        respond_with_failure(error_report[:error_code], error_report[:error_message])
       end
     end
 

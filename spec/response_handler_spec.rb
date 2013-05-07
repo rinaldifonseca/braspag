@@ -1,6 +1,104 @@
 require "spec_helper"
 
 describe Braspag::ResponseHandler do
+  describe ".capture_transaction" do
+    describe "on failure" do
+      let(:return_message) { "Operation Failed" }
+      let(:return_code) { "0" }
+      let(:transaction_data_response) do
+        {:braspag_transaction_id=>"d1e74043-1ae1-4de6-ba4e-a34aaaf5cd8a",
+         :acquirer_transaction_id=>"0403102700500",
+         :amount=>"180",
+         :authorization_code=>"20130403102702984",
+         :return_code=> return_code,
+         :return_message=> return_message,
+         :status=>"0"}
+      end
+
+      let(:body) do
+        {:capture_credit_card_transaction_response=>
+         {:capture_credit_card_transaction_result=>
+          {:success => false,
+           :error_report_data_collection => 
+             {:error_report_data_response => 
+               {:error_code => return_code,
+               :error_message => return_message}},
+            :@xmlns=>"https://www.pagador.com.br/webservice/pagador"}}}
+      end
+
+      let(:failure_response) do
+        OpenStruct.new(:body => body)
+      end
+
+      it "returns success false" do
+        response = Braspag::ResponseHandler.new.capture_transaction failure_response
+        response.success?.should_not be_true
+      end
+
+      it "returns the error_code and error_message" do
+        response = Braspag::ResponseHandler.new.capture_transaction failure_response
+        response.error_code.should eq return_code
+        response.error_message.should eq return_message
+      end
+    end
+    describe "on success" do
+      let(:return_message) { "Operation Successful" }
+      let(:return_code) { "6" }
+      let(:transaction_data_response) do
+        {:braspag_transaction_id=>"d1e74043-1ae1-4de6-ba4e-a34aaaf5cd8a",
+         :acquirer_transaction_id=>"0403102700500",
+         :amount=>"180",
+         :authorization_code=>"20130403102702984",
+         :return_code=> return_code,
+         :return_message=> return_message,
+         :status=>"0"}
+      end
+
+      let(:body) do
+        {:capture_credit_card_transaction_response=>
+         {:capture_credit_card_transaction_result=>
+          {:correlation_id=>"358502fc-f2df-4243-8e41-dc581a2e1eed",
+           :success=>true,
+           :error_report_data_collection=>nil,
+           :transaction_data_collection=>
+          {:transaction_data_response=> transaction_data_response }},
+            :@xmlns=>"https://www.pagador.com.br/webservice/pagador"}}
+      end
+
+      let(:success_response) do
+        OpenStruct.new(:body => body)
+      end
+
+      describe "when the transaction status is 0" do
+        it "returns success true" do
+          response = Braspag::ResponseHandler.new.capture_transaction success_response
+          response.success?.should be_true
+        end
+
+        it "returns a struct with the transaction data" do
+          response = Braspag::ResponseHandler.new.capture_transaction success_response
+          response.data.should eq transaction_data_response
+        end
+      end
+
+      describe "when the transaction status is not 0" do
+        before :each do
+          transaction_data_response[:status] = 1
+        end
+
+        it "returns success false" do
+          response = Braspag::ResponseHandler.new.capture_transaction success_response
+          response.success?.should_not be_true
+        end
+
+        it "returns the error_code and error_message" do
+          response = Braspag::ResponseHandler.new.capture_transaction success_response
+          response.error_code.should eq return_code
+          response.error_message.should eq return_message
+        end
+      end
+    end
+  end
   describe ".authorize_transaction" do
     describe "on failure" do
       let(:error_message){ "OrderId is a mandatory parameter" }
