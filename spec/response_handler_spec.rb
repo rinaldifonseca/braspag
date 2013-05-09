@@ -1,6 +1,126 @@
 require "spec_helper"
 
 describe Braspag::ResponseHandler do
+  describe "save_credit_card" do
+    describe "on success" do
+      let(:body) do
+        {:save_credit_card_response=>
+         {:save_credit_card_result=>
+          {:success=>true,
+           :correlation_id=>nil,
+           :just_click_key=>"b66b18cd-8036-46be-91c4-b1e91f318a76"},
+           :@xmlns=>"http://www.cartaoprotegido.com.br/WebService/"}}
+      end
+
+      let(:success_response) do
+        OpenStruct.new(:body => body)
+      end
+
+      it "returns success true" do
+        response = Braspag::ResponseHandler.new.save_credit_card success_response
+        response.success?.should be_true
+      end
+
+      it "returns a struct with the transaction data" do
+        expected_data = body[:save_credit_card_response][:save_credit_card_result]
+        response = Braspag::ResponseHandler.new.save_credit_card success_response
+        response.data.should eq expected_data
+      end
+    end
+
+    describe "on failure" do
+      let(:return_message) { "Operation Failed" }
+      let(:return_code) { "0" }
+      let(:body) do
+        {:save_credit_card_response=>
+         {:save_credit_card_result=>
+          {:success=>false,
+           :error_report_collection => 
+             {:error_report => 
+               {:error_code => return_code,
+               :error_message => return_message}}},
+           :@xmlns=>"http://www.cartaoprotegido.com.br/WebService/"}}
+      end
+
+      let(:failure_response) do
+        OpenStruct.new(:body => body)
+      end
+
+      it "returns success false" do
+        response = Braspag::ResponseHandler.new.save_credit_card failure_response
+        response.success?.should_not be_true
+      end
+
+      it "returns the error_code and error_message" do
+        response = Braspag::ResponseHandler.new.save_credit_card failure_response
+        response.error_code.should eq return_code
+        response.error_message.should eq return_message
+      end
+    end
+  end
+
+  describe "get_credit_card" do
+    describe "on failure" do
+      let(:return_message) { "Operation Failed" }
+      let(:return_code) { "0" }
+      let(:body) do
+        {:get_credit_card_response=>
+         {:get_credit_card_result=>
+          {:success=>false,
+           :error_report_collection => 
+             {:error_report => 
+               {:error_code => return_code,
+               :error_message => return_message}},
+           :masked_card_number=>"1"},
+           :@xmlns=>"http://www.cartaoprotegido.com.br/WebService/"}}
+      end
+
+      let(:failure_response) do
+        OpenStruct.new(:body => body)
+      end
+
+      it "returns success false" do
+        response = Braspag::ResponseHandler.new.get_credit_card failure_response
+        response.success?.should_not be_true
+      end
+
+      it "returns the error_code and error_message" do
+        response = Braspag::ResponseHandler.new.get_credit_card failure_response
+        response.error_code.should eq return_code
+        response.error_message.should eq return_message
+      end
+    end
+
+    describe "on success" do
+      let(:body) do
+        {:get_credit_card_response=>
+         {:get_credit_card_result=>
+          {:success=>true,
+           :correlation_id=>nil,
+           :card_holder=>"JOAO",
+           :card_number=>"1",
+           :card_expiration=>"09/2017",
+           :masked_card_number=>"1"},
+           :@xmlns=>"http://www.cartaoprotegido.com.br/WebService/"}}
+      end
+
+      let(:success_response) do
+        OpenStruct.new(:body => body)
+      end
+
+      it "returns success true" do
+        response = Braspag::ResponseHandler.new.get_credit_card success_response
+        response.success?.should be_true
+      end
+
+      it "returns a struct with the transaction data" do
+        expected_data = body[:get_credit_card_response][:get_credit_card_result]
+        response = Braspag::ResponseHandler.new.get_credit_card success_response
+        response.data.should eq expected_data
+      end
+    end
+  end
+
   describe ".capture_transaction" do
     describe "on failure" do
       let(:return_message) { "Operation Failed" }
