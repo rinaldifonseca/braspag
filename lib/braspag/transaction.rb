@@ -1,10 +1,11 @@
 module Braspag
   class Transaction
-    attr_accessor :soap_adapter, :response_handler
+    attr_accessor :soap_adapter, :response_handler, :transaction_param_builder
 
-    def initialize(soap_adapter = SavonAdapter, response_handler = ResponseHandler.new)
+    def initialize(soap_adapter = SavonAdapter, response_handler = ResponseHandler.new, transaction_param_builder = TransactionParamBuilder)
       @soap_adapter = soap_adapter
       @response_handler = response_handler
+      @transaction_param_builder = transaction_param_builder
     end
 
     def self.authorize(params)
@@ -36,11 +37,11 @@ module Braspag
     private
 
     def build_authorize_credit_card_params(params)
-      TransactionParamBuilder.new(params).authorize
+      transaction_param_builder.new(params).authorize
     end
 
     def build_capture_credit_card_params(params)
-      TransactionParamBuilder.new(params).capture
+      transaction_param_builder.new(params).capture
     end
   end
 end
