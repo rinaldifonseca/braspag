@@ -1,11 +1,14 @@
 module Braspag
+  CAPTURE_TRANSACTION_SUCCESS_STATUS = "0"
+  AUTHORIZE_TRANSACTION_SUCCESS_STATUS = ["1", "2"]
+
   class ResponseHandler
     def authorize_transaction(response)
       data = response.body[:authorize_transaction_response][:authorize_transaction_result]
       if data[:success]
         payment_data_response = data[:payment_data_collection][:payment_data_response]
         status =  payment_data_response[:status]
-        if status == "1" || status == "2"
+        if AUTHORIZE_TRANSACTION_SUCCESS_STATUS.include? status
           respond_with_success(payment_data_response.merge(data[:order_data]))
         else
           respond_with_failure(payment_data_response[:return_code], payment_data_response[:return_message])
@@ -19,7 +22,7 @@ module Braspag
       data = response.body[:capture_credit_card_transaction_response][:capture_credit_card_transaction_result]
       if data[:success]
         data_collection = data[:transaction_data_collection][:transaction_data_response]
-        if data_collection[:status] == "0"
+        if data_collection[:status] == CAPTURE_TRANSACTION_SUCCESS_STATUS
           respond_with_success(data_collection)
         else
           respond_with_failure(data_collection[:return_code], data_collection[:return_message])
