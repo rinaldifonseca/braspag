@@ -15,12 +15,12 @@ require "braspag/credit_card"
 module Braspag
   TRANSACTION_WSDL = { 
     :homologation => "https://homologacao.pagador.com.br/webservice/pagadorTransaction.asmx?wsdl",
-    :production => ""
+    :production => "https://pagador.com.br/webservice/pagadorTransaction.asmx?wsdl"
   }
 
   CREDIT_CARD_WSDL = { 
     :homologation => "https://homologacao.braspag.com.br/services/testenvironment/CartaoProtegido.asmx?wsdl",
-    :production => ""
+    :production => "https://cartaoprotegido.braspag.com.br/Services/V2/CartaoProtegido.asmx?wsdl"
   }
 
   class << self
