@@ -1,6 +1,15 @@
 require "spec_helper"
 
 describe Braspag::ResponseHandler do
+  describe "handle_error" do
+    it "returns a struct with the transaction data" do
+      failure_response = double
+      response = Braspag::ResponseHandler.new.handle_error(failure_response)
+      response.success?.should be_false
+      response.data.should == failure_response
+    end
+  end
+  
   describe "save_credit_card" do
     describe "on success" do
       let(:body) do

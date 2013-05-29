@@ -42,6 +42,10 @@ module Braspag
       credit_card_response_for(data)
     end
 
+    def handle_error(response)
+      OpenStruct.new(:success? => false, :data => response)
+    end
+
     private
 
     def respond_with_failure_transaction(data)
