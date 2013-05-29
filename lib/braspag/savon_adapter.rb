@@ -2,7 +2,8 @@ require "ostruct"
 module Braspag
   class SavonAdapter
     def self.call(wsdl_url, action, params)
-      client = Savon.client(wsdl: wsdl_url, pretty_print_xml: true)
+      log = Braspag.logging ? true : false
+      client = Savon.client(wsdl: wsdl_url, pretty_print_xml: true, log: log)
       response = client.call(action, message: params)
 
       rescue Savon::SOAPFault => error
