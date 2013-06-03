@@ -1,6 +1,6 @@
 module Braspag
   CAPTURE_TRANSACTION_SUCCESS_STATUS = "0"
-  AUTHORIZE_TRANSACTION_SUCCESS_STATUS = ["1", "2"]
+  AUTHORIZE_TRANSACTION_SUCCESS_STATUS = ["0", "1"]
 
   class ResponseHandler
     def authorize_transaction(response)
