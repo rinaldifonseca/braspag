@@ -1,5 +1,6 @@
 module Braspag
   CAPTURE_TRANSACTION_SUCCESS_STATUS = "0"
+  VOID_TRANSACTION_SUCCESS_STATUS = "0"
   AUTHORIZE_TRANSACTION_SUCCESS_STATUS = ["0", "1"]
 
   class ResponseHandler
@@ -23,6 +24,20 @@ module Braspag
       if data[:success]
         data_collection = data[:transaction_data_collection][:transaction_data_response]
         if data_collection[:status] == CAPTURE_TRANSACTION_SUCCESS_STATUS
+          respond_with_success(data_collection)
+        else
+          respond_with_failure(data_collection[:return_code], data_collection[:return_message])
+        end
+      else
+        respond_with_failure_transaction(data)
+      end
+    end
+
+    def void_transaction(response)
+      data = response.body[:void_credit_card_transaction_response][:void_credit_card_transaction_result]
+      if data[:success]
+        data_collection = data[:transaction_data_collection][:transaction_data_response]
+        if data_collection[:status] == VOID_TRANSACTION_SUCCESS_STATUS
           respond_with_success(data_collection)
         else
           respond_with_failure(data_collection[:return_code], data_collection[:return_message])
