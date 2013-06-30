@@ -91,7 +91,7 @@ module Braspag
     end
 
     def respond_with_failure(data)
-      data_response = data[:error_report_data_collection][:error_report_data_response]
+      data_response = data.fetch(:error_report_data_collection){{}}[:error_report_data_response]
 
       OpenStruct.new(:success? => false,
                      :error_code => data_response[:error_code],
