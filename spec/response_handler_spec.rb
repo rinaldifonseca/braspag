@@ -60,7 +60,7 @@ describe Braspag::ResponseHandler do
         response.success?.should_not be_true
       end
 
-      it "returns the error_code, error_message and error_data" do
+      it "returns the error_code and error_message" do
         response = Braspag::ResponseHandler.new.save_credit_card failure_response
         response.error_code.should eq return_code
         response.error_message.should eq return_message
@@ -164,10 +164,11 @@ describe Braspag::ResponseHandler do
         response.success?.should_not be_true
       end
 
-      it "returns the error_code and error_message" do
+      it "returns the error_code, error_message and error_data" do
         response = Braspag::ResponseHandler.new.capture_transaction failure_response
         response.error_code.should eq return_code
         response.error_message.should eq return_message
+        response.error_data.should eq body[:capture_credit_card_transaction_response][:capture_credit_card_transaction_result]
       end
     end
 
@@ -238,6 +239,7 @@ describe Braspag::ResponseHandler do
           response = Braspag::ResponseHandler.new.capture_transaction success_response
           response.error_code.should eq return_code
           response.error_message.should eq return_message
+          response.error_data.should eq body[:capture_credit_card_transaction_response][:capture_credit_card_transaction_result]
         end
       end
     end
@@ -271,6 +273,7 @@ describe Braspag::ResponseHandler do
           response = Braspag::ResponseHandler.new.authorize_transaction failure_response
           response.error_message.should == error_message
           response.error_code.should == error_code
+          response.error_data.should == body[:authorize_transaction_response][:authorize_transaction_result]
         end
       end
 
@@ -352,6 +355,7 @@ describe Braspag::ResponseHandler do
             response = Braspag::ResponseHandler.new.authorize_transaction success_response
             response.error_code.should == return_code
             response.error_message.should == return_message
+            response.error_data.should == body[:authorize_transaction_response][:authorize_transaction_result]
           end
         end
       end
